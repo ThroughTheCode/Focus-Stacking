@@ -1,7 +1,7 @@
 clc; close all; clear;
 tic
 %% Loading Images
-[~, IBW, H, W, nbframe]=LoadingImg('Demo/', 'DSC0', 8953, 8956, '.jpg', 1);
+[~, IBW, H, W, nbframe]=LoadingImg('Demo_from_Helicon_Focus/', 'DSC0', 8953, 8956, '.jpg', 1);
 
 %% Generating in-focus maps
 sigma=0.5;
