@@ -9,5 +9,3 @@ function [IP]= ILP(Pyr, a)
     end
     IP=Pyr;
 end
-
-
