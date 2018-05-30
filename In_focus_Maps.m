@@ -1,32 +1,37 @@
 function [InfocusMaps] = In_focus_Maps(IBW, sigma, threshold_for_quantile, se_size)
-    [H, W, nbframe]=size(IBW);
+% This function computes a map of the in-focus pixel for each image IBW by weighing the gaussian gradient of each image with the
+% sum of the gaussian gradients, by doing a threshold of the weighs with the quantile and by dilating the threshold.
+    
+    [H, W, nbframe]=size(IBW); %size of the images
 
     %% Generating edges maps
     clc; disp('Generate Edges Maps');
     EdgesMaps=GoGFilter(IBW, sigma);
-    WeightingEdgesMaps=EdgesMaps.^2./repmat(sum(EdgesMaps.^2, 3), [1, 1, nbframe]);
+    WeigtingEdgesMaps=EdgesMaps.^2./repmat(sum(EdgesMaps.^2, 3), [1, 1, nbframe]);
     clear EdgesMaps;
 
-    %% Generating binary maps
+    %% Generating binary maps with the quantile 
     BinaryMasks=zeros(H, W, nbframe, 'logical');
     for i=1:nbframe
         clc;
         disp(['Generating Binary Maps ', num2str(i), '/', num2str(nbframe)])
-        threshold=quantile(sort(reshape(WeightingEdgesMaps(:,:,i), [1, H*W])), threshold_for_quantile);
-        BinaryMasks(:,:,i)=WeightingEdgesMaps(:,:,i)>threshold;
+        threshold=quantile(sort(reshape(WeighingEdgesMaps(:,:,i), [1, H*W])), threshold_for_quantile);
+        BinaryMasks(:,:,i)=WeighingEdgesMaps(:,:,i)>threshold;
     end
-    clear WeightingEdgesMaps;
+    clear WeighingEdgesMaps;
 
-    %% Removing Island from binary masks
+    %% Removing Island if necessary
     %BinaryMasks=RemoveIslands(BinaryMasks, 1, 4);
 
-    %% Extending Binary masks
+    %% Extending the in-focus pixel maps
     clc; disp('Extending In_focus_Maps');
-    se=strel('diamond', se_size);
+    se=strel('diamond', se_size);   
     InfocusMaps=imdilate(BinaryMasks, se);
 end
 
 function [IOut] = RemoveIslands(I, N, P)
+% This function allows to remove isolated point which has under P neighbours around the N circle of pixels surrounding it from
+% the binary mask.
     IOut=I;
     [~, ~, nbframe]=size(I);
     for k=1:nbframe
